@@ -3,7 +3,7 @@
   "n_gpu": 0,
   "dsec_dir": "/home/siyuan/workspace/CVbyDL/",
   "arch": {
-      "type": "UNet",
+      "type": "DebugNet",
       "args": {
           "n_channels": 15
       }
@@ -26,7 +26,7 @@
   },
   "loss": "photometric_loss_l1",
   "metrics": [
-      "accuracy", "top_k_acc"
+      "mean_square_error", "mean_absolute_error"
   ],
   "lr_scheduler": {
       "type": "StepLR",

@@ -1,8 +1,23 @@
 from stringprep import c7_set
 from turtle import forward
+from matplotlib.pyplot import axis
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+class DebugNet(nn.Module):
+    def __init__(self, n_channels) -> None:
+        super(DebugNet, self).__init__()
+        self.F = nn.Sequential(
+            nn.Conv2d(n_channels, 1, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(1),
+            nn.ReLU(inplace=True),
+            nn.Sigmoid()
+        )
+    
+    def forward(self, x):
+        y = self.F(x)
+        return torch.sum(y, axis=1)
 
 class DoubleConv(nn.Module):
     def __init__(self, in_channel, out_channel) -> None:
