@@ -13,7 +13,7 @@ from dataset.visualization import disp_img_to_rgb_img, show_disp_overlay, show_i
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('dsec_dir', help='Path to DSEC dataset directory')
+    parser.add_argument('--dsec_dir', default="/home/siyuan/workspace/CVbyDL/", help='Path to DSEC dataset directory')
     parser.add_argument('--visualize', action='store_true', help='Visualize data')
     parser.add_argument('--overlay', action='store_true', help='If visualizing, overlay disparity and voxel grid image')
     args = parser.parse_args()
