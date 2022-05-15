@@ -1,5 +1,5 @@
 {
-  "name": "Mnist_LeNet",
+  "name": "EventDepth_UNet",
   "n_gpu": 1,
   "dsec_dir": "/home/siyuan/workspace/CVbyDL/",
   "arch": {
