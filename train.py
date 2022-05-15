@@ -2,7 +2,6 @@ import argparse
 import collections
 import torch
 import numpy as np
-import data_loader.data_loaders as module_data
 import model.loss as module_loss
 import model.metric as module_metric
 import model.unet as module_arch
@@ -10,11 +9,14 @@ from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
 
+from dataset.provider import DatasetProvider
+from dataset.dataloader import BaseDataLoader
+from pathlib import Path
 
 # fix random seeds for reproducibility
 SEED = 123
 torch.manual_seed(SEED)
-torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
@@ -22,7 +24,17 @@ def main(config):
     logger = config.get_logger('train')
 
     # setup data_loader instances
-    data_loader = config.init_obj('data_loader', module_data)
+    dataset_provider = DatasetProvider(Path(config['dsec_dir']))
+    train_dataset = dataset_provider.get_train_dataset()
+
+    data_loader = BaseDataLoader(
+        dataset=train_dataset,
+        batch_size=config["data_loader"]["args"]["batch_size"],
+        shuffle=config["data_loader"]["args"]["shuffle"],
+        validation_split=config["data_loader"]["args"]["validation_split"],
+        num_workers=config["data_loader"]["args"]["num_workers"],
+        drop_last=False,
+    )
     valid_data_loader = data_loader.split_validation()
 
     # build model architecture, then print to console

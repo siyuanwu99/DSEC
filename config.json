@@ -1,16 +1,17 @@
 {
   "name": "Mnist_LeNet",
   "n_gpu": 1,
-
+  "dsec_dir": "/home/siyuan/workspace/CVbyDL/",
   "arch": {
-      "type": "MnistModel",
-      "args": {}
+      "type": "UNet",
+      "args": {
+          "n_channels": 15
+      }
   },
   "data_loader": {
-      "type": "MnistDataLoader",
       "args":{
           "data_dir": "data/",
-          "batch_size": 128,
+          "batch_size": 2,
           "shuffle": true,
           "validation_split": 0.1,
           "num_workers": 2
