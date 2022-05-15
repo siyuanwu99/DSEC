@@ -14,8 +14,8 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--dsec_dir', default="/home/siyuan/workspace/CVbyDL/", help='Path to DSEC dataset directory')
-    parser.add_argument('--visualize', action='store_true', help='Visualize data')
-    parser.add_argument('--overlay', action='store_true', help='If visualizing, overlay disparity and voxel grid image')
+    parser.add_argument('--visualize', action='store_true', help='Visualize data', default=True)
+    parser.add_argument('--overlay', action='store_true', help='If visualizing, overlay disparity and voxel grid image', default=True)
     args = parser.parse_args()
 
     visualize = args.visualize
@@ -35,6 +35,10 @@ if __name__ == "__main__":
             drop_last=False)
     with torch.no_grad():
         for data in tqdm(train_loader):
+        # data = {'disparity_gt', 'file_index', 'representation'{'left', 'right'}}
+        # data['representation']['left'].shape = [1, 15, 480, 640]
+        # data['representation']['right'].shape = [1, 15, 480, 640]
+        # data['disparity_gt'].shape = [1, 480, 640]
             if batch_size == 1 and visualize:
                 disp = data['disparity_gt'].numpy().squeeze()
                 disp_img = disp_img_to_rgb_img(disp)

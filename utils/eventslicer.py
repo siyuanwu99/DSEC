@@ -31,7 +31,7 @@ class EventSlicer:
         self.ms_to_idx = np.asarray(self.h5f['ms_to_idx'], dtype='int64')
 
         if "t_offset" in list(h5f.keys()):
-            self.t_offset = int(h5f['t_offset'][()] / 1000)
+            self.t_offset = int(h5f['t_offset'][()])
             print("t_offset should be: ", int(h5f['t_offset'][()]))
             # self.t_offset = 0
         else:
