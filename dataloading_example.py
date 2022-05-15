@@ -3,6 +3,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+from model.loss import loss
+from model.unet import UNet
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -13,7 +15,7 @@ from dataset.visualization import disp_img_to_rgb_img, show_disp_overlay, show_i
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dsec_dir', default="/home/siyuan/workspace/CVbyDL/", help='Path to DSEC dataset directory')
+    parser.add_argument('--dsec_dir', default="/home/lxz/DSEC/", help='Path to DSEC dataset directory')
     parser.add_argument('--visualize', action='store_true', help='Visualize data', default=True)
     parser.add_argument('--overlay', action='store_true', help='If visualizing, overlay disparity and voxel grid image', default=True)
     args = parser.parse_args()
@@ -24,7 +26,7 @@ if __name__ == "__main__":
 
     dataset_provider = DatasetProvider(dsec_dir)
     train_dataset = dataset_provider.get_train_dataset()
-
+    model=UNet(n_channels=15)
     batch_size = 1
     num_workers = 0
     train_loader = DataLoader(
@@ -39,8 +41,12 @@ if __name__ == "__main__":
         # data['representation']['left'].shape = [1, 15, 480, 640]
         # data['representation']['right'].shape = [1, 15, 480, 640]
         # data['disparity_gt'].shape = [1, 480, 640]
+            print(data['representation']['left'].numpy().squeeze())
             if batch_size == 1 and visualize:
                 disp = data['disparity_gt'].numpy().squeeze()
+                output=model.forward(data['representation']['left'].numpy().squeeze())
+                loss_val=loss(output, disp)
+                print(loss_val)
                 disp_img = disp_img_to_rgb_img(disp)
                 if args.overlay:
                     left_voxel_grid = data['representation']['left'].squeeze()
