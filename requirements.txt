@@ -1,0 +1,13 @@
+torch>=1.1
+torchvision
+numpy
+tqdm
+tensorboard>=1.14
+h5py
+blosc-hdf5-plugin 
+opencv 
+scikit-video 
+prettytable 
+imageio
+matplotlib
+pandas
