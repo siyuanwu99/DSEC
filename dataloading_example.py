@@ -41,12 +41,12 @@ if __name__ == "__main__":
         # data['representation']['left'].shape = [1, 15, 480, 640]
         # data['representation']['right'].shape = [1, 15, 480, 640]
         # data['disparity_gt'].shape = [1, 480, 640]
-            print(data['representation']['left'].numpy().squeeze())
+            print(data['representation']['left'].numpy().squeeze().shape)
             if batch_size == 1 and visualize:
                 disp = data['disparity_gt'].numpy().squeeze()
                 output=model.forward(data['representation']['left'].numpy().squeeze())
                 loss_val=loss(output, disp)
-                print(loss_val)
+                # print(loss_val.shape)
                 disp_img = disp_img_to_rgb_img(disp)
                 if args.overlay:
                     left_voxel_grid = data['representation']['left'].squeeze()
