@@ -30,6 +30,7 @@ class Trainer(BaseTrainer):
         super().__init__(model, criterion, metric_ftns, optimizer, config)
         self.config = config
         self.device = device
+        self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
@@ -67,12 +68,10 @@ class Trainer(BaseTrainer):
         self.train_metrics.reset()
         batch_idx = 0
         for data in tqdm(self.data_loader):
-            data = data.to(self.device)
-
             inputs = data["representation"]["left"]
             target = data["disparity_gt"]
 
-            data, target = data.to(self.device), target.to(self.device)
+            inputs, target = inputs.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
             output = self.model(inputs)

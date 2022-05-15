@@ -27,7 +27,7 @@ def main(config):
     dataset_provider = DatasetProvider(Path(config['dsec_dir']))
     train_dataset = dataset_provider.get_train_dataset()
 
-    data_loader = BaseDataLoader(
+    data_loader = BaseDataLoader(  # could have bugs
         dataset=train_dataset,
         batch_size=config["data_loader"]["args"]["batch_size"],
         shuffle=config["data_loader"]["args"]["shuffle"],

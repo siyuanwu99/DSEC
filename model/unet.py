@@ -1,3 +1,5 @@
+from stringprep import c7_set
+from turtle import forward
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -40,8 +42,7 @@ class UNet(nn.Module):
         self.conv8 = DoubleConv(128, 64)
         self.up9 = nn.ConvTranspose2d(64, 32, 2, stride=2)
         self.conv9 = DoubleConv(64, 32)
-        self.up10 = nn.ConvTranspose2d(32, 16, 2, stride=2)
-        self.conv10 = DoubleConv(32, 1)
+        self.conv10 = nn.Conv2d(32, 1, 1)
         
     def forward(self, x):
         x = self.conv1(x)
@@ -54,15 +55,32 @@ class UNet(nn.Module):
         x = self.pool4(x)
         x = self.conv5(x)
         x = self.up6(x)
-        x = self.conv6(x)
         x = self.up7(x)
-        x = self.conv7(x)
         x = self.up8(x)
-        x = self.conv8(x)
         x = self.up9(x)
-        x = self.conv9(x)
-        x = self.up10(x)
         y = self.conv10(x)
+        return y
+
+class UNetConnect(UNet):
+    # def __init__(self, n_channels) -> None:
+    #     super(UNetConnect, self).__init__(n_channels)
+        
+    def forward(self, x):
+        c1 = self.conv1(x)
+        c2 = self.conv2(self.pool1(c1))
+        c3 = self.conv3(self.pool2(c2))
+        c4 = self.conv4(self.pool3(c3))
+        c5 = self.conv5(self.pool4(c4))
+        u6 = self.up6(c5)
+        c6 = self.conv6(torch.cat([u6, c4], dim=1))
+        u7 = self.up7(c6)
+        c7 = self.conv7(torch.cat([u7, c3], dim=1))
+        u8 = self.up8(c7)
+        c8 = self.conv8(torch.cat([u8, c2], dim=1))
+        u9 = self.up9(c8)
+        c9 = self.conv9(torch.cat([u9, c1], dim=1))
+        c10 = self.conv10(c9)
+        y = nn.Sigmoid()(c10)
         return y
         
         
