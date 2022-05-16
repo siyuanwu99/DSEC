@@ -1,7 +1,7 @@
 {
   "name": "EventDepth_UNet",
   "n_gpu": 0,
-  "dsec_dir": "/home/siyuan/workspace/CVbyDL/",
+  "dsec_dir": "/home/lxz/DSEC/",
   "arch": {
       "type": "DebugNet",
       "args": {
@@ -24,7 +24,7 @@
           "amsgrad": true
       }
   },
-  "loss": "photometric_loss_l1",
+  "loss": "loss",
   "metrics": [
       "mean_square_error", "mean_absolute_error"
   ],
