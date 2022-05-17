@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import torch
 import torch.nn.functional as F
-
+import torch
 
 def photometric_loss_l1(input, target, weight=None):
     """
@@ -23,7 +23,10 @@ def loss(output, target):
     valid_num = torch.count_nonzero(valid_idx)
     depth_output = 1 / output
     depth_target = 1 / target
-    R_k = torch.zeros(target.shape)
+    if torch.cuda.is_available() and output.device.type=='gpu':
+        R_k = torch.zeros(target.shape).cuda()
+    else:
+        R_k = torch.zeros(target.shape)
     R_k[valid_idx] = depth_target[valid_idx] - depth_output[valid_idx]
     loss_val = (1 / valid_num) * torch.sum(R_k ** 2) - (1 / valid_num) ** 2 * (torch.sum(R_k) ** 2)
     return loss_val
