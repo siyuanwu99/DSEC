@@ -1,6 +1,6 @@
 {
   "name": "EventDepth_UNet",
-  "n_gpu": 0,
+  "n_gpu": 2,
   "dsec_dir": "/home/lxz/DSEC/",
   "arch": {
       "type": "DebugNet",
@@ -45,7 +45,6 @@
       "monitor": "min val_loss",
       "early_stop": 10,
 
-      "tensorboard": true
-  },
-  "n_gpu": 5
+      "tensorboard": false
+  }
 }

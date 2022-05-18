@@ -1,6 +1,6 @@
 {
   "name": "EventDepth_UNet",
-  "n_gpu": 0,
+  "n_gpu": 2,
   "dsec_dir": "/content/drive/MyDrive/CVbyDL/",
   "arch": {
       "type": "UNet",
@@ -46,6 +46,5 @@
       "early_stop": 10,
 
       "tensorboard": true
-  },
-  "n_gpu": 5
+  }
 }
