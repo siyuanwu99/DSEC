@@ -14,7 +14,7 @@ def photometric_loss_l1(input, target, weight=None):
 
 
 def loss(output, target):
-    Q=extract_projmat(path='/home/lxz/DSEC/cam_to_cam.yaml')
+    Q=extract_projmat(path='cam_to_cam.yaml')
     if torch.cuda.is_available() and Q.device.type=='cpu' and output.device.type=='gpu':
         Q=Q.cuda()
     output = output.reshape(target.shape)
