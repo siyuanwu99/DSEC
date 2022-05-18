@@ -83,7 +83,7 @@ class Trainer(BaseTrainer):
             self.optimizer.step()
             ########################################################
             if self.config['trainer']['tensorboard']:
-                self.writer_tensbd.add_scalars("Loss", {'Train': loss.item()}, epoch)
+                self.writer_tensbd.add_scalars("Loss", {'Train': loss.item()}, batch_idx)
             ########################################################
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update("loss", loss.item())
