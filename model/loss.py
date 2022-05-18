@@ -15,14 +15,14 @@ def photometric_loss_l1(input, target, weight=None):
 
 def loss(output, target):
     Q=extract_projmat(path='cam_to_cam.yaml')
-    if torch.cuda.is_available() and Q.device.type=='cpu' and output.device.type=='gpu':
+    if torch.cuda.is_available() and Q.device.type=='cpu':
         Q=Q.cuda()
     output = output.reshape(target.shape)
     valid_idx = target != 0
     valid_num = torch.count_nonzero(valid_idx)
     depth_output = Q[2,3] / (output+Q[3,3])
     depth_target = Q[2,3] / (target+Q[3,3])
-    if torch.cuda.is_available() and output.device.type=='gpu':
+    if torch.cuda.is_available():
         R_k = torch.zeros(target.shape).cuda()
     else:
         R_k = torch.zeros(target.shape)
