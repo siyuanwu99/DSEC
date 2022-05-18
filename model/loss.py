@@ -20,6 +20,10 @@ def loss(output, target):
     output = output.reshape(target.shape)
     valid_idx = target != 0
     valid_num = torch.count_nonzero(valid_idx)
+    print(Q.device)
+    print(Q[2,3].device)
+    print(output.device)
+    print(target.device)
     depth_output = Q[2,3] / (output+Q[3,3])
     depth_target = Q[2,3] / (target+Q[3,3])
     if torch.cuda.is_available() and output.device.type=='gpu':
