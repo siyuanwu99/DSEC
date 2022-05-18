@@ -46,5 +46,6 @@
       "early_stop": 10,
 
       "tensorboard": true
-  }
+  },
+  "n_gpu": 5
 }
