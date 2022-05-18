@@ -26,13 +26,6 @@ def loss(output, target):
         R_k = torch.zeros(target.shape).cuda()
     else:
         R_k = torch.zeros(target.shape)
-    print(torch.cuda.is_available())
-    print(output.device.type)
-    print(R_k.device)
-    print(valid_idx.device)
-    print(depth_target.device)
-    print(depth_output.device)
-    print(valid_num.device)
     R_k[valid_idx] = depth_target[valid_idx] - depth_output[valid_idx]
     loss_val = (1 / valid_num) * torch.sum(R_k ** 2) - (1 / valid_num) ** 2 * (torch.sum(R_k) ** 2)
     return loss_val
