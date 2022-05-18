@@ -3,7 +3,7 @@ import torch
 
 def extract_projmat(path='/home/lxz/DSEC/cam_to_cam.yaml'):
     with open(path) as file:
-        documents = yaml.full_load(file)
+        documents = yaml.load(file,Loader=yaml.FullLoader)
         # print(documents['disparity_to_depth']['cams_03'])
 
         if torch.cuda.is_available():
