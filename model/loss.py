@@ -28,4 +28,12 @@ def loss(output, target):
         R_k = torch.zeros(target.shape)
     R_k[valid_idx] = depth_target[valid_idx] - depth_output[valid_idx]
     loss_val = (1 / valid_num) * torch.sum(R_k ** 2) - (1 / valid_num) ** 2 * (torch.sum(R_k) ** 2)
+    print(Q.device)
+    print(output.device)
+    print(valid_idx.device)
+    print(valid_num.device)
+    print(depth_output.device)
+    print(depth_target.device)
+    print(R_k.device)
+    print(loss_val.device)
     return loss_val
