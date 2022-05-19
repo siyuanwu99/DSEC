@@ -8,6 +8,7 @@ import model.unet as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
+from torch.utils.tensorboard import SummaryWriter
 
 from dataset.provider import DatasetProvider
 from dataset.dataloader import BaseDataLoader
@@ -83,5 +84,6 @@ if __name__ == '__main__':
         CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'),
         CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size')
     ]
+    tb_writer = SummaryWriter()
     config = ConfigParser.from_args(args, options)
-    main(config)
+    main(config,tb_writer)
