@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 import h5py
 from numba import jit
 import numpy as np
-import hdf5plugin
+# import hdf5plugin
 
 class EventSlicer:
     def __init__(self, h5f: h5py.File):

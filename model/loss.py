@@ -46,7 +46,7 @@ def loss(output, target):
     else:
         R_k = torch.zeros(target.shape)
     R_k[valid_idx] = log_depth_target[valid_idx] - depth_output[valid_idx]
-    loss_invar = (1 / valid_num) * torch.sum(R_k ** 2) - (1 / valid_num) ** 2 * (torch.sum(R_k) ** 2)
+    loss_invar = ((1 / valid_num) * torch.sum(R_k ** 2)) - (((1 / valid_num) ** 2) * (torch.sum(R_k) ** 2))
     grad_loss = multi_grad_loss(depth_output, depth_target,valid_idx,valid_num)
     grad_loss_s1=multi_grad_loss(output_s1, target_s1,valid_idx_s1,valid_num_s1)
     grad_loss_s2=multi_grad_loss(output_s2, target_s2,valid_idx_s2,valid_num_s2)
@@ -61,7 +61,7 @@ def loss(output, target):
     # print(loss_val.device)
     loss_val=loss_invar+0.5*(grad_loss+grad_loss_s1+grad_loss_s2+grad_loss_s3)
     return loss_val
-def get_log_depth_gt(depth_target,valid_idx,Dmax=8000,alpha=3.7):
+def get_log_depth_gt(depth_target,valid_idx,Dmax=4000,alpha=3.7):
     if torch.cuda.is_available():
         log_depth_target=torch.zeros(depth_target.shape).cuda()
         log_depth_target[valid_idx]=((torch.log((depth_target[valid_idx]/Dmax))/alpha)+1)
