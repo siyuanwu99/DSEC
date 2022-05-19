@@ -83,7 +83,7 @@ class Trainer(BaseTrainer):
             loss.backward()
             self.optimizer.step()
             self.count+=1
-            print(self.count)
+            # print(self.count)
             ########################################################
             if self.config['trainer']['tensorboard']:
                 self.writer_tensbd.add_scalars("Loss", {'Train': loss.item()}, self.count)
