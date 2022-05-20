@@ -60,6 +60,8 @@ class Trainer(BaseTrainer):
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
         ###########################################
         self.writer_tensbd = writer_tensbd
+        self.count_train=0
+        self.count_val=0
         ###########################################
 
     def _train_epoch(self, epoch):
@@ -81,9 +83,11 @@ class Trainer(BaseTrainer):
             loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
+            self.count_train+=1
+            # print(self.count)
             ########################################################
             if self.config['trainer']['tensorboard']:
-                self.writer_tensbd.add_scalars("Loss", {'Train': loss.item()}, batch_idx)
+                self.writer_tensbd.add_scalars("Loss", {'Train': loss.item()}, self.count_train)
             ########################################################
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update("loss", loss.item())
@@ -128,9 +132,10 @@ class Trainer(BaseTrainer):
 
                 output = self.model(inputs)
                 loss = self.criterion(output, target)
+                self.count_val+=1
                 ########################################################
                 if self.config['trainer']['tensorboard']:
-                    self.writer_tensbd.add_scalars("Loss", {'Validation': loss.item()}, epoch)
+                    self.writer_tensbd.add_scalars("Loss", {'Validation': loss.item()}, self.count_val)
                 ########################################################
                 self.writer.set_step(
                     (epoch - 1) * len(self.valid_data_loader) + batch_idx, "valid"
