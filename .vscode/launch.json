@@ -18,6 +18,22 @@
         "-c",
         "./config.json"
       ]
+    },
+    {
+      "name": "Run this",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceRoot}"
+      },
+      "args": [
+        "-c",
+        "./config.json",
+        "--train"
+      ]
     }
   ]
 }

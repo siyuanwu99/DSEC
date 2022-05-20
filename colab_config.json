@@ -1,6 +1,6 @@
 {
   "name": "EventDepth_UNet",
-  "n_gpu": 2,
+  "n_gpu": 1,
   "dsec_dir": "/content/drive/MyDrive/CVbyDL/",
   "arch": {
       "type": "UNet",
@@ -10,10 +10,10 @@
   },
   "data_loader": {
       "args":{
-          "batch_size": 2,
+          "batch_size": 16,
           "shuffle": true,
           "validation_split": 0.1,
-          "num_workers": 2
+          "num_workers": 1
       }
   },
   "optimizer": {
@@ -38,7 +38,7 @@
   "trainer": {
       "epochs": 100,
 
-      "save_dir": "saved/",
+      "save_dir": "../saved/",
       "save_period": 1,
       "verbosity": 2,
       

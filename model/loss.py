@@ -4,6 +4,14 @@ import torch
 import torch.nn.functional as F
 import torch
 
+def get_projectmat():
+    Q_np = np.array([[   1.0000,    0.0000,    0.0000, -336.8341],
+            [   0.0000,    1.0000,    0.0000, -220.9113],
+            [   0.0000,    0.0000,    0.0000,  583.3081],
+            [   0.0000,    0.0000,    1.6688,   -0.0000]])
+    Q = torch.tensor(Q_np)
+    return Q
+
 def photometric_loss_l1(input, target, weight=None):
     """
     photometric loss
@@ -14,7 +22,8 @@ def photometric_loss_l1(input, target, weight=None):
 
 
 def loss(output, target):
-    Q=extract_projmat(path='cam_to_cam.yaml')
+    # Q=extract_projmat(path='cam_to_cam.yaml')
+    Q = get_projectmat()
     if torch.cuda.is_available() and Q.device.type=='cpu':
         Q=Q.cuda()
     output = output.reshape(target.shape)
@@ -29,3 +38,4 @@ def loss(output, target):
     R_k[valid_idx] = depth_target[valid_idx] - depth_output[valid_idx]
     loss_val = (1 / valid_num) * torch.sum(R_k ** 2) - (1 / valid_num) ** 2 * (torch.sum(R_k) ** 2)
     return loss_val
+ 
