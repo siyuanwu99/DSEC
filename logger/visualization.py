@@ -1,5 +1,5 @@
 import importlib
-import torch.utils.tensorboard
+from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 
 
@@ -21,7 +21,7 @@ class TensorboardWriter():
             #     except ImportError:
             #         succeeded = False
             #     self.selected_module = module
-            self.writer = torch.utils.tensoboard.SummaryWriter(log_dir)
+            self.writer = SummaryWriter(log_dir)
             succeeded = True
             self.selected_module = "torch.utils.tensorboard"
 

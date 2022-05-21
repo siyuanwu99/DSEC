@@ -177,6 +177,7 @@ class ResidualLayer(nn.Module):
             nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
         )
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         residual = x
@@ -185,8 +186,7 @@ class ResidualLayer(nn.Module):
         if self.down_sample:
             residual = self.down_sample(x)
         out += residual
-        out = nn.ReLU()(out)
-        return out
+        return self.relu(out)
 
 
 class MonoDepthNet(nn.Module):
@@ -203,9 +203,6 @@ class MonoDepthNet(nn.Module):
             nn.BatchNorm2d(Nb),
             nn.ReLU(inplace=True),
         )
-
-        # Prediction layer
-        self.P = nn.Sequential(nn.Conv2d(Nb, 1, 3, padding=1), nn.BatchNorm2d(1), nn.Sigmoid())
 
         # Encoders
         self.E = nn.ModuleList()
@@ -230,9 +227,12 @@ class MonoDepthNet(nn.Module):
                         Nb * (2 ** j), Nb * (2 ** (j - 1)), kernel_size=3, padding=1, stride=1
                     ),
                     nn.BatchNorm2d(Nb * (2 ** (j - 1))),
-                    nn.ReLU(),
+                    nn.ReLU(inplace=True),
                 )
             )
+
+        # Prediction layer
+        self.P = nn.Sequential(nn.Conv2d(Nb, 1, 3, padding=1), nn.BatchNorm2d(1), nn.Sigmoid())
 
     def forward(self, x, z):
         # print("input shape:", x.shape)
