@@ -6,7 +6,7 @@ import model.loss as module_loss
 import model.metric as module_metric
 import model.unet as module_arch
 from parse_config import ConfigParser
-from trainer import Trainer
+from trainer import Trainer, LSTMTrainer
 from utils import prepare_device
 from torch.utils.tensorboard import SummaryWriter
 
@@ -58,7 +58,7 @@ def main(config,writer_tensbd):
     optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
     lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
-    trainer = Trainer(model, criterion, metrics, optimizer,
+    trainer = LSTMTrainer(model, criterion, metrics, optimizer,
                       config=config,
                       device=device,
                       data_loader=data_loader,
