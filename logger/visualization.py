@@ -1,4 +1,5 @@
 import importlib
+import torch.utils.tensorboard
 from datetime import datetime
 
 
@@ -12,14 +13,17 @@ class TensorboardWriter():
 
             # Retrieve vizualization writer.
             succeeded = False
-            for module in ["torch.utils.tensorboard", "tensorboardX"]:
-                try:
-                    self.writer = importlib.import_module(module).SummaryWriter(log_dir)
-                    succeeded = True
-                    break
-                except ImportError:
-                    succeeded = False
-                self.selected_module = module
+            # for module in ["torch.utils.tensorboard", "tensorboardX"]:
+            #     try:
+            #         self.writer = importlib.import_module(module).SummaryWriter(log_dir)
+            #         succeeded = True
+            #         break
+            #     except ImportError:
+            #         succeeded = False
+            #     self.selected_module = module
+            self.writer = torch.utils.tensoboard.SummaryWriter(log_dir)
+            succeeded = True
+            self.selected_module = "torch.utils.tensorboard"
 
             if not succeeded:
                 message = "Warning: visualization (Tensorboard) is configured to use, but currently not installed on " \
