@@ -130,7 +130,7 @@ class Trainer(BaseTrainer):
                 target = data["disparity_gt"]
                 inputs, target = inputs.to(self.device), target.to(self.device)
 
-                output = self.model(inputs)
+                output, _ = self.model(inputs)
                 loss = self.criterion(output, target)
                 self.count_val+=1
                 ########################################################
@@ -190,6 +190,8 @@ class LSTMTrainer(BaseTrainer):
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
         self.log_step = int(np.sqrt(data_loader.batch_size))
+        
+        self.state = None
 
         self.train_metrics = MetricTracker(
             "loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer
@@ -226,7 +228,6 @@ class LSTMTrainer(BaseTrainer):
         """
         self.model.train()
         self.train_metrics.reset()
-        state = None
         for batch_idx, data in enumerate(tqdm(self.data_loader)):
             inputs = data["representation"]["left"]
             target = data["disparity_gt"]
@@ -234,9 +235,16 @@ class LSTMTrainer(BaseTrainer):
             inputs, target = inputs.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
-            output, state = self.model(inputs, state)
+            output, state = self.model(inputs, self.state)
+
+            self.state = []
+            for s in state:
+                s0_ = s[0].detach()
+                s1_ = s[1].detach()
+                self.state.append((s0_, s1_))
+                
             loss = self.criterion(output, target)
-            loss.backward()
+            loss.backward(retain_graph=True)
             self.optimizer.step()
             self.count_train+=1
             # print(self.count)
@@ -285,7 +293,7 @@ class LSTMTrainer(BaseTrainer):
                 target = data["disparity_gt"]
                 inputs, target = inputs.to(self.device), target.to(self.device)
 
-                output = self.model(inputs)
+                output, _ = self.model(inputs, self.state)
                 loss = self.criterion(output, target)
                 self.count_val+=1
                 ########################################################
@@ -298,9 +306,9 @@ class LSTMTrainer(BaseTrainer):
                 self.valid_metrics.update("loss", loss.item())
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
-                # self.writer.add_image(
-                #     "input", make_grid(inputs.cpu(), nrow=8, normalize=True)
-                # )
+                self.writer.add_image(
+                    "input", make_grid(output.cpu(), nrow=8, normalize=True)
+                )
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():
