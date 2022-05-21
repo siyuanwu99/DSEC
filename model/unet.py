@@ -115,7 +115,11 @@ class ConvLSTM(nn.Module):
         self.padding = kernel_size // 2
         self.zero_tensors = {}
         self.Gates = nn.Conv2d(
-            input_channels + output_channels, 4 * output_channels, kernel_size, padding=self.padding, stride=1
+            input_channels + output_channels,
+            4 * output_channels,
+            kernel_size,
+            padding=self.padding,
+            stride=1,
         )
 
     def forward(self, x, z_prev=None):
@@ -152,7 +156,7 @@ class EncoderLayer(nn.Module):
         super(EncoderLayer, self).__init__()
         self.in_chn = in_chn
         self.out_chn = out_chn
-        self.conv = nn.Conv2d(in_chn, out_chn, kernel_size=5, stride=2, padding=1)
+        self.conv = nn.Conv2d(in_chn, out_chn, kernel_size=5, stride=2, padding=2)
         self.conv_lstm = ConvLSTM(out_chn, out_chn, kernel_size=3)
 
     def forward(self, x, z_prev=None):
@@ -194,10 +198,14 @@ class MonoDepthNet(nn.Module):
         Nr = 2
 
         # Header
-        self.H = nn.Sequential(nn.Conv2d(n_channels, Nb, 3), nn.ReLU(inplace=True))
+        self.H = nn.Sequential(
+            nn.Conv2d(n_channels, Nb, 3, stride=1, padding=1),
+            nn.BatchNorm2d(Nb),
+            nn.ReLU(inplace=True),
+        )
 
         # Prediction layer
-        self.P = nn.Sequential(nn.Conv2d(Nb, 1, 3), nn.Sigmoid())
+        self.P = nn.Sequential(nn.Conv2d(Nb, 1, 3, padding=1), nn.BatchNorm2d(1), nn.Sigmoid())
 
         # Encoders
         self.E = nn.ModuleList()
@@ -217,36 +225,39 @@ class MonoDepthNet(nn.Module):
             j = Ne - i
             self.D.append(
                 nn.Sequential(
-                    # nn.ConvTranspose2d(Nb * (2 ** j), Nb * (2 ** (j - 1)), kernel_size=3, stride=2, padding=1),
                     nn.UpsamplingBilinear2d(scale_factor=2),
-                    nn.Conv2d(Nb * (2 ** j), Nb * (2 ** (j - 1)), kernel_size=3, padding=2, stride=1),
+                    nn.Conv2d(
+                        Nb * (2 ** j), Nb * (2 ** (j - 1)), kernel_size=3, padding=1, stride=1
+                    ),
                     nn.BatchNorm2d(Nb * (2 ** (j - 1))),
-                    nn.ReLU()
+                    nn.ReLU(),
                 )
             )
 
     def forward(self, x, z):
+        # print("input shape:", x.shape)
         x = self.H(x)
         head = x.clone()
 
         if z is None:
             z = [None] * self.Ne
-        print(x.shape)
+        # print("Head:", head.shape)
         blocks = []
         states = []
         for i, encoder in enumerate(self.E):
             x, z_ = encoder(x, z[i])
-            print("Encoder {}: {}".format(i, x.shape))
+            # print("Encoder {}: {}".format(i, x.shape))
             blocks.append(x)
             states.append(z_)
-        
+
         for i, residual in enumerate(self.R):
-            print("Residual {}: {}".format(i, x.shape))
+            # print("Residual {}: {}".format(i, x.shape))
             x = residual(x)
 
         for i, decoder in enumerate(self.D):
-            print("Decoder {}: {}".format(i, x.shape))
+            # print("Decoder {}: {}".format(i, x.shape))
             x = decoder(x + blocks[self.Ne - i - 1])
 
         x = self.P(x + head)
+        # print("Prediction: {}".format(x.shape))
         return x, states
