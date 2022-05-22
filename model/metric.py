@@ -36,15 +36,15 @@ def mean_square_error(output, target):
         Q=get_projectmat()
         if torch.cuda.is_available() and Q.device.type == "cpu":
             Q = Q.cuda()
-        print("output=",output)
-        print("target=",target)
+        print("output=",output.shape)
+        print("target=",target.shape)
         valid_idx = target != 0
         valid_num = torch.count_nonzero(valid_idx)
         invalid_idx = target == 0
         depth_target = Q[2, 3] / (target + Q[3, 3])
         log_depth_target = get_log_depth_gt(depth_target, valid_idx)
         diffMatrix = torch.abs(output - log_depth_target)
-        diffMatrix[invalid_idx]=0
+        # diffMatrix[invalid_idx]=0
         return torch.sum(torch.pow(diffMatrix, 2)) / valid_num
 
 
@@ -53,15 +53,15 @@ def mean_absolute_error(output, target):
         Q=get_projectmat()
         if torch.cuda.is_available() and Q.device.type == "cpu":
             Q = Q.cuda()
-        print("output=",output)
-        print("target=",target)
+        print("output=",output.shape)
+        print("target=",target.shape)
         valid_idx = target != 0
         valid_num = torch.count_nonzero(valid_idx)
         invalid_idx = target == 0
         depth_target = Q[2, 3] / (target + Q[3, 3])
         log_depth_target = get_log_depth_gt(depth_target, valid_idx)
         diffMatrix = torch.abs(output - log_depth_target)
-        diffMatrix[invalid_idx]=0
+        # diffMatrix[invalid_idx]=0
         return torch.sum(diffMatrix) / valid_num
 
 
