@@ -36,6 +36,8 @@ def mean_square_error(output, target):
         Q=get_projectmat()
         if torch.cuda.is_available() and Q.device.type == "cpu":
             Q = Q.cuda()
+        print("output=",output)
+        print("target=",target)
         valid_idx = target != 0
         valid_num = torch.count_nonzero(valid_idx)
         invalid_idx = target == 0
@@ -51,6 +53,8 @@ def mean_absolute_error(output, target):
         Q=get_projectmat()
         if torch.cuda.is_available() and Q.device.type == "cpu":
             Q = Q.cuda()
+        print("output=",output)
+        print("target=",target)
         valid_idx = target != 0
         valid_num = torch.count_nonzero(valid_idx)
         invalid_idx = target == 0
