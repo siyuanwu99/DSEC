@@ -1,5 +1,6 @@
 import torch
 import math
+from model.loss import get_projectmat,get_log_depth_gt
 
 def lg10(x):
     return torch.div(torch.log(x), math.log(10))
@@ -32,14 +33,32 @@ def top_k_acc(output, target, k=3):
 
 def mean_square_error(output, target):
     with torch.no_grad():
-        diffMatrix = torch.abs(output - target)
-        return torch.sum(torch.pow(diffMatrix, 2)) / diffMatrix.numel()
+        Q=get_projectmat()
+        if torch.cuda.is_available() and Q.device.type == "cpu":
+            Q = Q.cuda()
+        valid_idx = target != 0
+        valid_num = torch.count_nonzero(valid_idx)
+        invalid_idx = target == 0
+        depth_target = Q[2, 3] / (target + Q[3, 3])
+        log_depth_target = get_log_depth_gt(depth_target, valid_idx)
+        diffMatrix = torch.abs(output - log_depth_target)
+        diffMatrix[invalid_idx]=0
+        return torch.sum(torch.pow(diffMatrix, 2)) / valid_num
 
 
 def mean_absolute_error(output, target):
     with torch.no_grad():
-        diffMatrix = torch.abs(output - target)
-        return torch.sum(diffMatrix) / diffMatrix.numel()
+        Q=get_projectmat()
+        if torch.cuda.is_available() and Q.device.type == "cpu":
+            Q = Q.cuda()
+        valid_idx = target != 0
+        valid_num = torch.count_nonzero(valid_idx)
+        invalid_idx = target == 0
+        depth_target = Q[2, 3] / (target + Q[3, 3])
+        log_depth_target = get_log_depth_gt(depth_target, valid_idx)
+        diffMatrix = torch.abs(output - log_depth_target)
+        diffMatrix[invalid_idx]=0
+        return torch.sum(diffMatrix) / valid_num
 
 
 def abs_rel_error(output, target):

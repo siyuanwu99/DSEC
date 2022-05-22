@@ -249,8 +249,8 @@ class LSTMTrainer(BaseTrainer):
             self.count_train+=1
             # print(self.count)
             ########################################################
-            # if self.config['trainer']['tensorboard']:
-            #     self.writer_tensbd.add_scalars("Loss", {'Train': loss.item()}, self.count_train)
+            if self.config['trainer']['tensorboard']:
+                self.writer_tensbd.add_scalars("Loss", {'Train': loss.item()}, self.count_train)
             ########################################################
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update("loss", loss.item())
@@ -297,8 +297,8 @@ class LSTMTrainer(BaseTrainer):
                 loss = self.criterion(output, target)
                 self.count_val+=1
                 ########################################################
-                # if self.config['trainer']['tensorboard']:
-                #     self.writer_tensbd.add_scalars("Loss", {'Validation': loss.item()}, self.count_val)
+                if self.config['trainer']['tensorboard']:
+                    self.writer_tensbd.add_scalars("Loss", {'Validation': loss.item()}, self.count_val)
                 ########################################################
                 self.writer.set_step(
                     (epoch - 1) * len(self.valid_data_loader) + batch_idx, "valid"
