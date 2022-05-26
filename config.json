@@ -3,7 +3,7 @@
   "n_gpu": 2,
   "dsec_dir": "/home/lxz/DSEC/",
   "arch": {
-      "type": "DebugNet",
+      "type": "MonoDepthNet",
       "args": {
           "n_channels": 15
       }
@@ -19,7 +19,7 @@
   "optimizer": {
       "type": "Adam",
       "args":{
-          "lr": 0.005,
+          "lr": 0.0001,
           "weight_decay": 0,
           "amsgrad": true
       }

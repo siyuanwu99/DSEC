@@ -79,7 +79,7 @@ def loss(output, target):
     return loss_val
 
 
-def get_log_depth_gt(depth_target, valid_idx, Dmax=4000, alpha=3.7):
+def get_log_depth_gt(depth_target, valid_idx, Dmax=8000, alpha=3.7):
     if torch.cuda.is_available():
         log_depth_target = torch.zeros(depth_target.shape).cuda()
         log_depth_target[valid_idx] = (torch.log((depth_target[valid_idx] / Dmax)) / alpha) + 1
