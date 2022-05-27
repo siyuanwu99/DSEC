@@ -21,7 +21,7 @@ torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
-def main(config,writer_tensbd):
+def main(config):#,writer_tensbd):
     logger = config.get_logger('train')
 
     # setup data_loader instances
@@ -63,8 +63,8 @@ def main(config,writer_tensbd):
                       device=device,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
-                      lr_scheduler=lr_scheduler,
-                      writer_tensbd=writer_tensbd)
+                      lr_scheduler=lr_scheduler)#,
+                    #   writer_tensbd=writer_tensbd)
 
     trainer.train()
 
@@ -84,6 +84,6 @@ if __name__ == '__main__':
         CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'),
         CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size')
     ]
-    tb_writer = SummaryWriter()
+    # tb_writer = SummaryWriter()
     config = ConfigParser.from_args(args, options)
-    main(config,tb_writer)
+    main(config)
