@@ -5,7 +5,8 @@ from torchvision.utils import make_grid
 from .base_trainer import BaseTrainer
 from utils import inf_loop, MetricTracker
 from tqdm import tqdm
-from model.loss import from_log_to_depth
+from model.loss import from_log_to_depth,get_projectmat
+
 
 from dataset.visualization import disp_img_to_rgb_img, show_disp_overlay, show_image
 
@@ -191,6 +192,7 @@ class LSTMTrainer(BaseTrainer):
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
         self.log_step = int(np.sqrt(data_loader.batch_size))
+        self.Q=get_projectmat()
         
         self.state = None
 
@@ -265,7 +267,10 @@ class LSTMTrainer(BaseTrainer):
                     )
                 )
                 self.writer.add_image(
-                    "input", make_grid(from_log_to_depth(output[0]).cpu(), nrow=2, normalize=True)
+                    "input", make_grid(from_log_to_depth(output[0]).cpu(), nrow=2, normalize=True),0
+                )
+                self.writer.add_image(
+                    "input", make_grid((self.Q[2, 3] / (target + self.Q[3, 3])).cpu(), nrow=2, normalize=True),1
                 )
 
             if batch_idx == self.len_epoch:
@@ -308,8 +313,12 @@ class LSTMTrainer(BaseTrainer):
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
                 self.writer.add_image(
-                    "input", make_grid(from_log_to_depth(output).cpu(), nrow=2, normalize=True)
+                    "input", make_grid(from_log_to_depth(output).cpu(), nrow=2, normalize=True),0
                 )
+                self.writer.add_image(
+                    "input", make_grid((self.Q[2, 3] / (target + self.Q[3, 3])).cpu(), nrow=2, normalize=True),1
+                )
+
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():
