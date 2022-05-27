@@ -105,3 +105,7 @@ def multi_grad_loss(log_depth_output, depth_target, valid_idx, valid_num):
     gradient_loss = torch.sum(h_gradient) + torch.sum(v_gradient)
     grad_loss = gradient_loss / valid_num
     return grad_loss
+
+def from_log_to_depth(input_log_image,Dmax=8000, alpha=3.7):
+    depth_image=Dmax*torch.exp(-alpha*(1-input_log_image))
+    return depth_image

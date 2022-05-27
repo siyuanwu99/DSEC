@@ -5,6 +5,7 @@ from torchvision.utils import make_grid
 from .base_trainer import BaseTrainer
 from utils import inf_loop, MetricTracker
 from tqdm import tqdm
+from model.loss import from_log_to_depth
 
 from dataset.visualization import disp_img_to_rgb_img, show_disp_overlay, show_image
 
@@ -264,7 +265,7 @@ class LSTMTrainer(BaseTrainer):
                     )
                 )
                 self.writer.add_image(
-                    "input", make_grid(output[0].cpu(), nrow=2, normalize=True)
+                    "input", make_grid(from_log_to_depth(output[0]).cpu(), nrow=2, normalize=True)
                 )
 
             if batch_idx == self.len_epoch:
@@ -307,7 +308,7 @@ class LSTMTrainer(BaseTrainer):
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
                 self.writer.add_image(
-                    "input", make_grid(output.cpu(), nrow=2, normalize=True)
+                    "input", make_grid(from_log_to_depth(output).cpu(), nrow=2, normalize=True)
                 )
 
         # add histogram of model parameters to the tensorboard
