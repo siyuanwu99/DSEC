@@ -241,23 +241,23 @@ class MonoDepthNet(nn.Module):
 
         if z is None:
             z = [None] * self.Ne
-        print("Head:", head.shape)
+        # print("Head:", head.shape)
         blocks = []
         states = []
         for i, encoder in enumerate(self.E):
             x, z_ = encoder(x, z[i])
-            print("Encoder {}: {}".format(i, x.shape))
+            # print("Encoder {}: {}".format(i, x.shape))
             blocks.append(x)
             states.append(z_)
 
         for i, residual in enumerate(self.R):
-            print("Residual {}: {}".format(i, x.shape))
+            # print("Residual {}: {}".format(i, x.shape))
             x = residual(x)
 
         for i, decoder in enumerate(self.D):
-            print("Decoder {}: {}".format(i, x.shape))
+            # print("Decoder {}: {}".format(i, x.shape))
             x = decoder(x + blocks[self.Ne - i - 1])
 
         x = self.P(x + head)####### Why use skip connection?
-        print("Prediction: {}".format(x.shape))
+        # print("Prediction: {}".format(x.shape))
         return x, states
