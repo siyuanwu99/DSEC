@@ -163,7 +163,7 @@ class EncoderLayer(nn.Module):
         x = self.conv(x)
         z = self.conv_lstm(x, z_prev)
         y = z[0]
-        return y, z
+        return y, z###### No Relu?
 
 
 class ResidualLayer(nn.Module):
@@ -224,16 +224,16 @@ class MonoDepthNet(nn.Module):
                 nn.Sequential(
                     nn.UpsamplingBilinear2d(scale_factor=2),
                     nn.Conv2d(
-                        Nb * (2 ** j), Nb * (2 ** (j - 1)), kernel_size=3, padding=1, stride=1
-                    ),
+                        Nb * (2 ** j), Nb * (2 ** (j - 1)), kernel_size=5, padding=2, stride=2
+                    ),########## Kernel size why not 5?
                     nn.BatchNorm2d(Nb * (2 ** (j - 1))),
                     nn.ReLU(inplace=True),
                 )
             )
 
         # Prediction layer
-        self.P = nn.Sequential(nn.Conv2d(Nb, 1, 3, padding=1), nn.BatchNorm2d(1), nn.Sigmoid())
-
+        self.P = nn.Sequential(nn.Conv2d(Nb, 1, 1, padding=1), nn.BatchNorm2d(1), nn.Sigmoid())
+        ######### Why kernel size 3 instead of 1?
     def forward(self, x, z):
         # print("input shape:", x.shape)
         x = self.H(x)
@@ -258,6 +258,6 @@ class MonoDepthNet(nn.Module):
             # print("Decoder {}: {}".format(i, x.shape))
             x = decoder(x + blocks[self.Ne - i - 1])
 
-        x = self.P(x + head)
+        x = self.P(x + head)####### Why use skip connection?
         # print("Prediction: {}".format(x.shape))
         return x, states
