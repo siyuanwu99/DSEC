@@ -269,8 +269,11 @@ class LSTMTrainer(BaseTrainer):
                 self.writer.add_image(
                     "output", make_grid(from_log_to_depth(output[0]).cpu(), nrow=2, normalize=True)
                 )
+                valid_idx = target != 0
+                temp=torch.zeros(target.shape)
+                temp[valid_idx] =self.Q[2, 3] / (target[valid_idx] + self.Q[3, 3])
                 self.writer.add_image(
-                    "target", make_grid((self.Q[2, 3] / (target + self.Q[3, 3])).cpu(), nrow=2, normalize=True)
+                    "target", make_grid(temp.cpu(), nrow=2, normalize=True)
                 )
 
             if batch_idx == self.len_epoch:
