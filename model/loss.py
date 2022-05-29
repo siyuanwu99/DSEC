@@ -80,7 +80,7 @@ def loss(output, target):
     return loss_val
 
 
-def get_log_depth_gt(depth_target, valid_idx, Dmax=4000, alpha=3.7):
+def get_log_depth_gt(depth_target, valid_idx, Dmax=80000, alpha=3.7):
     if torch.cuda.is_available():
         log_depth_target = torch.zeros(depth_target.shape).cuda()
         log_depth_target[valid_idx] = (torch.log((depth_target[valid_idx] / Dmax)) / alpha) + 1
@@ -106,3 +106,7 @@ def multi_grad_loss(log_depth_output, depth_target, valid_idx, valid_num):
     gradient_loss = torch.sum(h_gradient) + torch.sum(v_gradient)
     grad_loss = gradient_loss / valid_num
     return grad_loss
+
+def from_log_to_depth(input_log_image,Dmax=80000, alpha=3.7):
+    depth_image=Dmax*torch.exp(-alpha*(1-input_log_image))
+    return depth_image

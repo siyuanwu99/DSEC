@@ -5,6 +5,8 @@ from torchvision.utils import make_grid
 from .base_trainer import BaseTrainer
 from utils import inf_loop, MetricTracker
 from tqdm import tqdm
+from model.loss import from_log_to_depth,get_projectmat
+
 
 from dataset.visualization import disp_img_to_rgb_img, show_disp_overlay, show_image
 
@@ -23,7 +25,7 @@ class Trainer(BaseTrainer):
         config,
         device,
         data_loader,
-        writer_tensbd,
+        # writer_tensbd,
         valid_data_loader=None,
         lr_scheduler=None,
         len_epoch=None,
@@ -59,9 +61,9 @@ class Trainer(BaseTrainer):
         self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
         ###########################################
-        self.writer_tensbd = writer_tensbd
-        self.count_train=0
-        self.count_val=0
+        # self.writer_tensbd = writer_tensbd
+        # self.count_train=0
+        # self.count_val=0
         ###########################################
 
     def _train_epoch(self, epoch):
@@ -83,7 +85,7 @@ class Trainer(BaseTrainer):
             loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
-            self.count_train+=1
+            # self.count_train+=1
             # print(self.count)
             ########################################################
             # if self.config['trainer']['tensorboard']:
@@ -130,9 +132,9 @@ class Trainer(BaseTrainer):
                 target = data["disparity_gt"]
                 inputs, target = inputs.to(self.device), target.to(self.device)
 
-                output = self.model(inputs)
+                output, _ = self.model(inputs)
                 loss = self.criterion(output, target)
-                self.count_val+=1
+                # self.count_val+=1
                 ########################################################
                 # if self.config['trainer']['tensorboard']:
                 #     self.writer_tensbd.add_scalars("Loss", {'Validation': loss.item()}, self.count_val)
@@ -177,7 +179,7 @@ class LSTMTrainer(BaseTrainer):
         config,
         device,
         data_loader,
-        writer_tensbd,
+        # writer_tensbd,
         valid_data_loader=None,
         lr_scheduler=None,
         len_epoch=None,
@@ -190,6 +192,9 @@ class LSTMTrainer(BaseTrainer):
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
         self.log_step = int(np.sqrt(data_loader.batch_size))
+        self.Q=get_projectmat()
+        
+        self.state = None
 
         self.train_metrics = MetricTracker(
             "loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer
@@ -208,14 +213,14 @@ class LSTMTrainer(BaseTrainer):
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
-        self.log_step = int(np.sqrt(data_loader.batch_size))
+        self.log_step = int(10 * (data_loader.batch_size))
 
         self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
         ###########################################
-        self.writer_tensbd = writer_tensbd
-        self.count_train=0
-        self.count_val=0
+        # self.writer_tensbd = writer_tensbd
+        # self.count_train=0
+        # self.count_val=0
         ###########################################
 
     def _train_epoch(self, epoch):
@@ -226,7 +231,6 @@ class LSTMTrainer(BaseTrainer):
         """
         self.model.train()
         self.train_metrics.reset()
-        state = None
         for batch_idx, data in enumerate(tqdm(self.data_loader)):
             inputs = data["representation"]["left"]
             target = data["disparity_gt"]
@@ -234,11 +238,18 @@ class LSTMTrainer(BaseTrainer):
             inputs, target = inputs.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
-            output, state = self.model(inputs, state)
+            output, state = self.model(inputs, self.state)
+
+            self.state = []
+            for s in state:
+                s0_ = s[0].detach()
+                s1_ = s[1].detach()
+                self.state.append((s0_, s1_))
+                
             loss = self.criterion(output, target)
-            loss.backward()
+            loss.backward(retain_graph=True)
             self.optimizer.step()
-            self.count_train+=1
+            # self.count_train+=1
             # print(self.count)
             ########################################################
             # if self.config['trainer']['tensorboard']:
@@ -255,9 +266,15 @@ class LSTMTrainer(BaseTrainer):
                         epoch, self._progress(batch_idx), loss.item()
                     )
                 )
-                # self.writer.add_image(
-                #     "input", make_grid(inputs.cpu(), nrow=8, normalize=True)
-                # )
+                self.writer.add_image(
+                    "output", make_grid(from_log_to_depth(output[0]).cpu(), nrow=2, normalize=True)
+                )
+                valid_idx = target != 0
+                temp=torch.ones(target.shape)*100000
+                temp[valid_idx] =self.Q[2, 3] / (target[valid_idx] + self.Q[3, 3])
+                self.writer.add_image(
+                    "target", make_grid(temp.cpu(), nrow=2, normalize=True)
+                )
 
             if batch_idx == self.len_epoch:
                 break
@@ -285,10 +302,10 @@ class LSTMTrainer(BaseTrainer):
                 target = data["disparity_gt"]
                 inputs, target = inputs.to(self.device), target.to(self.device)
 
-                output = self.model(inputs)
+                output, _ = self.model(inputs, self.state)
                 loss = self.criterion(output, target)
-                self.count_val+=1
-                ########################################################
+                # self.count_val+=1
+                # ########################################################
                 # if self.config['trainer']['tensorboard']:
                 #     self.writer_tensbd.add_scalars("Loss", {'Validation': loss.item()}, self.count_val)
                 ########################################################
@@ -298,9 +315,16 @@ class LSTMTrainer(BaseTrainer):
                 self.valid_metrics.update("loss", loss.item())
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
-                # self.writer.add_image(
-                #     "input", make_grid(inputs.cpu(), nrow=8, normalize=True)
-                # )
+                self.writer.add_image(
+                    "output", make_grid(from_log_to_depth(output).cpu(), nrow=2, normalize=True)
+                )
+                valid_idx = target != 0
+                temp=torch.ones(target.shape)*100000
+                temp[valid_idx] =self.Q[2, 3] / (target[valid_idx] + self.Q[3, 3])
+                self.writer.add_image(
+                    "target", make_grid(temp.cpu(), nrow=2, normalize=True)
+                )
+
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():
