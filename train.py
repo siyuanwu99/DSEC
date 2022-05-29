@@ -34,7 +34,7 @@ def main(config):#,writer_tensbd):
         shuffle=config["data_loader"]["args"]["shuffle"],
         validation_split=config["data_loader"]["args"]["validation_split"],
         num_workers=config["data_loader"]["args"]["num_workers"],
-        drop_last=False,
+        drop_last=True,
     )
     valid_data_loader = data_loader.split_validation()
 
