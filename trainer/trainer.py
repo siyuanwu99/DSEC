@@ -267,7 +267,7 @@ class LSTMTrainer(BaseTrainer):
                     )
                 )
                 self.writer.add_image(
-                    "output", make_grid(from_log_to_depth(output[0,:,:450,40:]).cpu(), nrow=2, normalize=True)
+                    "output", make_grid(from_log_to_depth(output[:,:,:450,40:]).cpu(), nrow=2, normalize=True)
                 )
                 target_cpu = target.detach().cpu()
                 valid_idx = target_cpu != 0
@@ -318,7 +318,7 @@ class LSTMTrainer(BaseTrainer):
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
                 self.writer.add_image(
-                    "output", make_grid(from_log_to_depth(output[0,:,:450,40:]).cpu(), nrow=2, normalize=True)
+                    "output", make_grid(from_log_to_depth(output[:,:,:450,40:]).cpu(), nrow=2, normalize=True)
                 )
                 target_cpu = target.detach().cpu()
                 valid_idx = target_cpu != 0
