@@ -46,5 +46,7 @@
       "early_stop": 10,
 
       "tensorboard": false
-  }
+  },
+  "resume": true,
+  "checkpoint": "../checkpoint-epoch14.pth."
 }
