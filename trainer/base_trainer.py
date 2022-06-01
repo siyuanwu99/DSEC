@@ -42,8 +42,8 @@ class BaseTrainer:
         # setup visualization writer instance
         # TODO: check this: use summary writer                
         self.writer = TensorboardWriter(config.log_dir, self.logger, cfg_trainer['tensorboard'])
-
-        if config.resume is not None:
+        # print(config.resume)
+        if config.resume is not None and torch.cuda.is_available():
             self._resume_checkpoint(config.resume)
 
     @abstractmethod

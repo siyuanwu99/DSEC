@@ -35,7 +35,7 @@ def loss(output, target):
     # output = output.reshape(target.shape)
     valid_idx = target != 0
     valid_num = torch.count_nonzero(valid_idx)
-    depth_target = Q[2, 3] / (target + Q[3, 3])
+    depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
     log_depth_target = get_log_depth_gt(depth_target, valid_idx)
     depth_output = output.reshape(log_depth_target.shape)
 
@@ -79,7 +79,7 @@ def loss(output, target):
     return loss_val
 
 
-def get_log_depth_gt(depth_target, valid_idx, Dmax=80000, alpha=3.7):
+def get_log_depth_gt(depth_target, valid_idx, Dmax=80, alpha=3.7):
     if torch.cuda.is_available():
         log_depth_target = torch.zeros(depth_target.shape).cuda()
         log_depth_target[valid_idx] = (torch.log((depth_target[valid_idx] / Dmax)) / alpha) + 1
@@ -106,6 +106,6 @@ def multi_grad_loss(log_depth_output, depth_target, valid_idx, valid_num):
     grad_loss = gradient_loss / valid_num
     return grad_loss
 
-def from_log_to_depth(input_log_image,Dmax=80000, alpha=3.7):
+def from_log_to_depth(input_log_image,Dmax=80, alpha=3.7):
     depth_image=Dmax*torch.exp(-alpha*(1-input_log_image))
     return depth_image
