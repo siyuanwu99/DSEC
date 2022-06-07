@@ -6,6 +6,7 @@ from .base_trainer import BaseTrainer
 from utils import inf_loop, MetricTracker
 from tqdm import tqdm
 from model.loss import from_log_to_depth,get_projectmat
+from scipy.ndimage.filters import gaussian_filter
 
 
 from dataset.visualization import disp_img_to_rgb_img, show_disp_overlay, show_image
@@ -234,6 +235,7 @@ class LSTMTrainer(BaseTrainer):
         for batch_idx, data in enumerate(tqdm(self.data_loader)):
             inputs = data["representation"]["left"]
             target = data["disparity_gt"]
+            target = torch.from_numpy(gaussian_filter(target, sigma=7))
 
             inputs, target = inputs.to(self.device), target.to(self.device)
 
