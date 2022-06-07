@@ -235,7 +235,6 @@ class LSTMTrainer(BaseTrainer):
         for batch_idx, data in enumerate(tqdm(self.data_loader)):
             inputs = data["representation"]["left"]
             target = data["disparity_gt"]
-            target = torch.from_numpy(gaussian_filter(target, sigma=7))
 
             inputs, target = inputs.to(self.device), target.to(self.device)
 
