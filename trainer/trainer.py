@@ -275,7 +275,7 @@ class LSTMTrainer(BaseTrainer):
                 temp[valid_idx] =self.Q[2, 3] / ((target_cpu[valid_idx] - self.Q[3, 3])*self.Q[3,2])
                 temp=torch.unsqueeze(temp,dim=1)
                 self.writer.add_image(
-                    "target", make_grid(temp[:,:,:450,40:].cpu(), nrow=2, normalize=True)
+                    "target", make_grid(temp[:,:,:430,40:].cpu(), nrow=2, normalize=True)
                 )
 
             if batch_idx == self.len_epoch:
@@ -318,7 +318,7 @@ class LSTMTrainer(BaseTrainer):
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
                 self.writer.add_image(
-                    "output", make_grid(from_log_to_depth(output[:,:,:450,40:]).cpu(), nrow=2, normalize=True)
+                    "output", make_grid(from_log_to_depth(output[:,:,:430,40:]).cpu(), nrow=2, normalize=True)
                 )
                 target_cpu = target.detach().cpu()
                 valid_idx = target_cpu != 0
@@ -326,7 +326,7 @@ class LSTMTrainer(BaseTrainer):
                 temp[valid_idx] =self.Q[2, 3] / ((target_cpu[valid_idx] - self.Q[3, 3])*self.Q[3,2])
                 temp=torch.unsqueeze(temp,dim=1)
                 self.writer.add_image(
-                    "target", make_grid(temp[:,:,:450,40:].cpu(), nrow=2, normalize=True)
+                    "target", make_grid(temp[:,:,:430,40:].cpu(), nrow=2, normalize=True)
                 )
 
 
