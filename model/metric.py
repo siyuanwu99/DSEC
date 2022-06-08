@@ -1,6 +1,6 @@
 import torch
 import math
-from model.loss import get_projectmat,get_log_depth_gt
+from model.loss import *
 
 def lg10(x):
     return torch.div(torch.log(x), math.log(10))
@@ -38,12 +38,15 @@ def mean_square_error(output, target):
             Q = Q.cuda()
         valid_idx = target != 0
         valid_num = torch.count_nonzero(valid_idx)
-        # invalid_idx = target == 0
+        invalid_idx = target == 0
         depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
-        log_depth_target = get_log_depth_gt(depth_target, valid_idx)
-        depth_output = output.reshape(log_depth_target.shape)
-        diffMatrix = torch.abs(depth_output - log_depth_target)
-        # diffMatrix[invalid_idx]=0
+        depth_target = torch.clamp(depth_target,0,80)
+        depth_target[invalid_idx] = 0
+        depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
+        depth_target *= 80
+        depth_output = from_log_to_depth(output.reshape(depth_target.shape))
+        diffMatrix = torch.abs(depth_output - depth_target)
+        diffMatrix[invalid_idx]=0
         return torch.sum(torch.pow(diffMatrix, 2)) / valid_num
 
 
@@ -54,12 +57,15 @@ def mean_absolute_error(output, target):
             Q = Q.cuda()
         valid_idx = target != 0
         valid_num = torch.count_nonzero(valid_idx)
-        # invalid_idx = target == 0
+        invalid_idx = target == 0
         depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
-        log_depth_target = get_log_depth_gt(depth_target, valid_idx)
-        depth_output = output.reshape(log_depth_target.shape)
-        diffMatrix = torch.abs(depth_output - log_depth_target)
-        # diffMatrix[invalid_idx]=0
+        depth_target = torch.clamp(depth_target,0,80)
+        depth_target[invalid_idx] = 0
+        depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
+        depth_target *= 80
+        depth_output = from_log_to_depth(output.reshape(depth_target.shape))
+        diffMatrix = torch.abs(depth_output - depth_target)
+        diffMatrix[invalid_idx]=0
         return torch.sum(diffMatrix) / valid_num
 
 

@@ -43,17 +43,19 @@ def loss(output, target):
     valid_idx_s1 = target_s1 != 0
     valid_num_s1 = torch.count_nonzero(valid_idx_s1)
     output_s1 = depth_output[:, ::2, ::2]
+    depth_target_s1 = Q[2, 3] / ((target_s1 - Q[3, 3])*Q[3,2])
 
     target_s2 = target_s1[:, ::2, ::2]
     valid_idx_s2 = target_s2 != 0
     valid_num_s2 = torch.count_nonzero(valid_idx_s2)
     output_s2 = output_s1[:, ::2, ::2]
+    depth_target_s2 = Q[2, 3] / ((target_s2 - Q[3, 3])*Q[3,2])
 
     target_s3 = target_s2[:, ::2, ::2]
     valid_idx_s3 = target_s3 != 0
     valid_num_s3 = torch.count_nonzero(valid_idx_s3)
     output_s3 = output_s2[:, ::2, ::2]
-    # depth_output = Q[2,3] / (output+Q[3,3])
+    depth_target_s3 = Q[2, 3] / ((target_s3 - Q[3, 3])*Q[3,2])
 
     if torch.cuda.is_available():
         R_k = torch.zeros(target.shape).cuda()
@@ -64,9 +66,9 @@ def loss(output, target):
         ((1 / valid_num) ** 2) * (torch.sum(R_k) ** 2)
     )
     grad_loss = multi_grad_loss(depth_output, depth_target, valid_idx, valid_num)
-    grad_loss_s1 = multi_grad_loss(output_s1, target_s1, valid_idx_s1, valid_num_s1)
-    grad_loss_s2 = multi_grad_loss(output_s2, target_s2, valid_idx_s2, valid_num_s2)
-    grad_loss_s3 = multi_grad_loss(output_s3, target_s3, valid_idx_s3, valid_num_s3)
+    grad_loss_s1 = multi_grad_loss(output_s1, depth_target_s1, valid_idx_s1, valid_num_s1)
+    grad_loss_s2 = multi_grad_loss(output_s2, depth_target_s2, valid_idx_s2, valid_num_s2)
+    grad_loss_s3 = multi_grad_loss(output_s3, depth_target_s3, valid_idx_s3, valid_num_s3)
     # print(Q.device)
     # print(output.device)
     # print(valid_idx.device)
@@ -80,12 +82,17 @@ def loss(output, target):
 
 
 def get_log_depth_gt(depth_target, valid_idx, Dmax=80, alpha=3.7):
+    invalid_idx=~valid_idx
+    depth_target1 = torch.clamp(depth_target,0,80)
+    depth_target1[invalid_idx] = 0
+    depth_target1 = depth_target1/torch.amax(torch.amax(depth_target1,1,keepdims=True),2,keepdims=True)
+    depth_target1 *= 80
     if torch.cuda.is_available():
-        log_depth_target = torch.zeros(depth_target.shape).cuda()
-        log_depth_target[valid_idx] = (torch.log((depth_target[valid_idx] / Dmax)) / alpha) + 1
+        log_depth_target = torch.zeros(depth_target1.shape).cuda()
+        log_depth_target[valid_idx] = (torch.log((depth_target1[valid_idx] / Dmax)) / alpha) + 1
     else:
-        log_depth_target = torch.zeros(depth_target.shape)
-        log_depth_target[valid_idx] = (torch.log((depth_target[valid_idx] / Dmax)) / alpha) + 1
+        log_depth_target = torch.zeros(depth_target1.shape)
+        log_depth_target[valid_idx] = (torch.log((depth_target1[valid_idx] / Dmax)) / alpha) + 1
     return log_depth_target
 
 
