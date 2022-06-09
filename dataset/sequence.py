@@ -113,7 +113,11 @@ class Sequence(Dataset):
     def get_disparity_map(filepath: Path):
         assert filepath.is_file()
         disp_16bit = cv2.imread(str(filepath), cv2.IMREAD_ANYDEPTH)
-        return disp_16bit.astype('float32')/256
+        disp_float = disp_16bit.astype('float32')/256
+        kernel = np.ones((9, 9), np.float32)
+        disp_float = cv2.filter2D(disp_float, -1, kernel)
+        disp_float = cv2.GaussianBlur(disp_float,(9,9), cv2.BORDER_DEFAULT)
+        return disp_float
 
     @staticmethod
     def close_callback(h5f_dict):
