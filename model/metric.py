@@ -115,7 +115,7 @@ def mean_absolute_error_10(output, target):
         depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
         depth_target = torch.clamp(depth_target,0,80)
         depth_target[invalid_idx] = 0
-        invalid_idx=invalid_idx+depth_target>10
+        invalid_idx=invalid_idx+(depth_target>10)
         depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
         depth_target *= 80
         depth_output = from_log_to_depth(output.reshape(depth_target.shape))
@@ -133,7 +133,7 @@ def mean_absolute_error_20(output, target):
         depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
         depth_target = torch.clamp(depth_target,0,80)
         depth_target[invalid_idx] = 0
-        invalid_idx=invalid_idx+depth_target>20
+        invalid_idx=invalid_idx+(depth_target>20)
         depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
         depth_target *= 80
         depth_output = from_log_to_depth(output.reshape(depth_target.shape))
@@ -151,7 +151,7 @@ def mean_absolute_error_30(output, target):
         depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
         depth_target = torch.clamp(depth_target,0,80)
         depth_target[invalid_idx] = 0
-        invalid_idx=invalid_idx+depth_target>30
+        invalid_idx=invalid_idx+(depth_target>30)
         depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
         depth_target *= 80
         depth_output = from_log_to_depth(output.reshape(depth_target.shape))
