@@ -104,3 +104,57 @@ def delta3_error(output, target):
         maxRatio = maxOfTwo(yOverZ, zOverY)
 
         return torch.sum(torch.le(maxRatio, math.pow(1.25, 3)).float()) / maxRatio.numel()
+def mean_absolute_error_10(output, target):
+    with torch.no_grad():
+        Q=get_projectmat()
+        if torch.cuda.is_available() and Q.device.type == "cpu":
+            Q = Q.cuda()
+        valid_idx = target != 0
+        valid_num = torch.count_nonzero(valid_idx)
+        invalid_idx = target == 0
+        depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
+        depth_target = torch.clamp(depth_target,0,80)
+        depth_target[invalid_idx] = 0
+        invalid_idx=invalid_idx+depth_target>10
+        depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
+        depth_target *= 80
+        depth_output = from_log_to_depth(output.reshape(depth_target.shape))
+        diffMatrix = torch.abs(depth_output - depth_target)
+        diffMatrix[invalid_idx]=0
+        return torch.sum(diffMatrix) / valid_num
+def mean_absolute_error_20(output, target):
+    with torch.no_grad():
+        Q=get_projectmat()
+        if torch.cuda.is_available() and Q.device.type == "cpu":
+            Q = Q.cuda()
+        valid_idx = target != 0
+        valid_num = torch.count_nonzero(valid_idx)
+        invalid_idx = target == 0
+        depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
+        depth_target = torch.clamp(depth_target,0,80)
+        depth_target[invalid_idx] = 0
+        invalid_idx=invalid_idx+depth_target>20
+        depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
+        depth_target *= 80
+        depth_output = from_log_to_depth(output.reshape(depth_target.shape))
+        diffMatrix = torch.abs(depth_output - depth_target)
+        diffMatrix[invalid_idx]=0
+        return torch.sum(diffMatrix) / valid_num
+def mean_absolute_error_30(output, target):
+    with torch.no_grad():
+        Q=get_projectmat()
+        if torch.cuda.is_available() and Q.device.type == "cpu":
+            Q = Q.cuda()
+        valid_idx = target != 0
+        valid_num = torch.count_nonzero(valid_idx)
+        invalid_idx = target == 0
+        depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
+        depth_target = torch.clamp(depth_target,0,80)
+        depth_target[invalid_idx] = 0
+        invalid_idx=invalid_idx+depth_target>30
+        depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
+        depth_target *= 80
+        depth_output = from_log_to_depth(output.reshape(depth_target.shape))
+        diffMatrix = torch.abs(depth_output - depth_target)
+        diffMatrix[invalid_idx]=0
+        return torch.sum(diffMatrix) / valid_num
