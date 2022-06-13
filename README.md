@@ -27,6 +27,9 @@ An event camera, also known as a neuromorphic camera[^1], silicon retina[^2] or 
 
 Event cameras have a rather high dynamic range, mostly about 120dB[^4], which is about four times of the human eyes'. Event cameras are thus sensors that can provide high-quality visual information even in challenging high-speed scenarios and high dynamic range environments, enabling new application domains for vision-based algorithms. Recently, event cameras have received great interest in object recognition, autonomous vehicles, and robotics[^5].
 
+![Event camera](https://i.imgur.com/CLB782G.png)
+<center> <b>Fig. 1</b> Event camera output verses standard camera output</center>
+
 
 ### Depth Prediction
 Depth prediction is the visual ability to perceive the world in three dimensions (3D) and the distance of an object. It has a rather important role in robotics and the automotive industry.
@@ -41,8 +44,25 @@ In this work, they mainly focus on dense, monocular, and metric depth estimation
 DSEC offers data from a wide-baseline stereo setup of two color frame cameras and two high-resolution monochrome event cameras. In this project, we only use the data from the left event camera as training data and the disparity as ground truth.
 
 ![dataset](https://i.imgur.com/WJfVu9k.png)
+<center> <b>Fig. 2</b> Event data and image data from DSEC dataset</center>
 
 ## Event Representation
+
+### Event Stream
+
+The output of an ideal event camera is a stream of asynchronous events. A event $\mathbf{e}_i$ records its type $p_i \in \{ -1, 1\}$, triggered at moment $t_i$, when the brightness at pixel $(x_i, y_i)$ changes over $C$.  The event stream is an unordered list of events, sending asynchronously from the sensor.
+
+### Spatio-Temporal Voxel Grid
+
+Due to the sparse and asynchronous property of event stream, it's hard to feed into the neural network. Therefore, pre-processing event stream to other dense tensor-like representations while preserving its time information should be considered. In this paper, the authors use a novel representation named as spatio-temporal voxel grid. First, the input event stream is grouped into several fixed-size non-overlapping sliding windows based on their time $t_i$. The length of time window is $\Delta T$. Next, event within time window $j$ are grouped into $B$ temporal bins follows this rule:
+
+$$
+E _ { k } ( u _ { k } , t _ { n } ) = \sum _ { e _ { i } } p _ { i } \delta ( u _ { i } - u _ { k } ) \operatorname { max } \left( 0,1 - \left| t _ { n } - \frac { B - 1 } { \Delta T } ( t _ { i } - t _ { 0 } ) \right| \right)
+$$
+
+Then the event stream can be converted to a $B \times H \times W$ tensor which could be feed into neural network. $H \times W$ are height and width of spatio-temporal voxel grid, $B$ can be regarded as channels.The non-zero values are then normalized as described in the paper.
+In our reproduction we use $\Delta T = 50 ms$ and $B = 15$. 
+
 
 
 
@@ -52,6 +72,7 @@ DSEC offers data from a wide-baseline stereo setup of two color frame cameras an
 ## Network Architecture
 
 ![Network structure](https://edmundwsy.github.io/assets/img/network_structure.png)
+<center> <b>Fig. 3</b> Network Structure</center>
 
 As shown in the figure above, the network we produced has a recurrent, fully convolutional structure. It can simply be divided as a header, an encoder, a decoder and a predictor.
 
@@ -93,7 +114,7 @@ The network is trained to minimize the scale-invariant loss $\mathcal{L}_{k, \ma
 $$
 \mathcal{L}_{\mathrm{tot}}=\sum_{k=0}^{L-1} \mathcal{L}_{k, \mathrm{si}}+\lambda \mathcal{L}_{k, \mathrm{grad}}
 $$
-Given a sequence of ground truth log depth map $\{\mathcal{D}_{k }\}$ , denote the residual $R_k =\hat D_k − D_k$. Then the scale-invariant loss $\mathcal{L}_{k, \mathrm{si}}$ is defined as
+where $\lambda$ is a hyper-parameter representing the loss weight. Given a sequence of ground truth log depth map $\{\mathcal{D}_{k }\}$ , denote the residual $R_k =\hat D_k − D_k$. Then the scale-invariant loss $\mathcal{L}_{k, \mathrm{si}}$ is defined as
 
 $$
 \mathcal{L}_{k, \mathrm{si}}=\frac{1}{n} \sum_{\mathbf{u}}\left(\mathcal{R}_{k}(\mathbf{u})\right)^{2}-\frac{1}{n^{2}}\left(\sum_{\mathbf{u}} \mathcal{R}_{k}(\mathbf{u})\right)^{2}
@@ -113,13 +134,52 @@ We have chosen the same hyper-parameters as in the paper[^7]. There are totally 
 
 But due to the limitation on computational resources, we only use a batch size of 4. The training dataset only includes subfiles from DSEC dataset [^8], namely `zurich_city_00_b` and `interlaken_00_c`. 
 
+
 ## Experiments
 
+We mainly use Google Colab as our platform. The GPU available is Tesla T4, with a memory of approximately 15 GB.
 
+But because of the time limitation of Colab, the training process is not continous. We have to wait 12 hours for the Colab to be available. As shown in the following loss plots, the loss curves are not continous because of this problem.
+
+![Training loss](https://i.imgur.com/Sw1bXCF.png)
+<center> <b>Fig. 4</b>  Training loss</center>
+
+![Validation loss](https://i.imgur.com/9I5VB71.png)
+<center>  <b>Fig. 5</b>  Validation loss</center>
 
 
 
 ## Results
+
+### GitHub Repo
+
+Due to the training code is missing in the official repository, we managed to build this neural network from scratch to reproduce the results the reported. Our repository can be found [here](https://github.com/edmundwsy/DSEC)
+
+### Visualization
+The results are visualizaed in inverse depth. Higher intensity denotes lower depth (closer distance).
+![Predicted depth](https://i.imgur.com/0FhQmlg.png)
+![Predicted depth](https://i.imgur.com/ThufPd7.png)
+
+<center> <b>Fig. 6</b> Predicted inverse depth</center>
+
+![Ground Truth depth](https://i.imgur.com/jx4zL1d.png)
+![Ground Truth depth](https://i.imgur.com/9gMZkxd.png)
+
+<center> <b>Fig. 7</b> Ground truth inverse depth</center>
+
+
+### Metrics
+
+| Model types |   Event based   | Event based |  Frame based  |
+|:-----------:|:---------------:|:-----------:|:-------------:|
+|   Metrics   | Paper model[^7] |  Our model  | MonoDepth[^9] |
+| MAE in 10m  |      1.85       |    5.32     |     3.44      |
+| MAE in 20m  |      2.64       |    8.94     |     7.02      |
+| MAE in 30m  |      3.13       |    12.04    |     10.03     |
+
+
+In the paper, they trained 300 epoches (127800 iterations) on the real world dataset consist of 8523 samples. Due to limited computation resources, we trained 50 epoches on a smaller dataset with 225 samples only. Each sample is a 50ms time window consist of 5,000 to 500,000
+ events. Though produced reasonable results, our model still underperforms the baseline models.
 
 
 
@@ -128,6 +188,7 @@ But due to the limitation on computational resources, we only use a batch size o
 ## Discussion
 
 1. Suffering from limited computational resources, the network is trained on relatively small amount of data. The total number of images in the training set is 900. This is one of the main reason why our model underforms their original model.
+2. One way to boost the training process is to convert all the ground truth disparity data to log depth data in advance, and store it locally. Instead of converting the disparity data during training and validation, using the pre-computed log depth data directly can save computations.
 
 
 
@@ -152,3 +213,5 @@ We have successfully reproduce the paper **Learning Monocular Dense Depth from E
 [^7]: J. Hidalgo-Carrió, D. Gehrig and D. Scaramuzza, "Learning Monocular Dense Depth from Events," 2020 International Conference on 3D Vision (3DV), 2020, pp. 534-542, doi: 10.1109/3DV50981.2020.00063.
 
 [^8]: Gehrig, M., Aarents, W., Gehrig, D., and Scaramuzza, D., “DSEC: A Stereo Event Camera Dataset for Driving Scenarios”, <i>arXiv e-prints</i>, 2021.
+
+[^9]: Godard, C., Mac Aodha, O., and Brostow, G. J., “Unsupervised Monocular Depth Estimation with Left-Right Consistency”, <i>arXiv e-prints</i>, 2016.
