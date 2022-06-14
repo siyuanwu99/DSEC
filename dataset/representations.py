@@ -23,8 +23,7 @@ class VoxelGrid(EventRepresentation):
 
             t_norm = time
             # t_norm = (C - 1) * (t_norm-t_norm[0]) / (t_norm[-1]-t_norm[0])
-            kt = torch.exp(20) / (torch.exp(20) - 1)
-            t_norm = (C - 1) * (torch.exp(-(t_norm - t_norm[0])/0.05) - torch.exp(-20)) * kt
+            t_norm = (C - 1) * (1-torch.exp(-(t_norm - t_norm[0])/ 0.5))
 
             x0 = x.int()
             y0 = y.int()
