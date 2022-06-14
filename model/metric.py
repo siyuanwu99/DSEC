@@ -155,3 +155,31 @@ def mean_absolute_error_30(output, target):
         diffMatrix = torch.abs(depth_output - depth_target)
         diffMatrix[invalid_idx]=0
         return torch.sum(diffMatrix) / valid_num
+def log_ssim_error(output, target):
+    with torch.no_grad():
+        Q=get_projectmat()
+        if torch.cuda.is_available() and Q.device.type == "cpu":
+            Q = Q.cuda()
+        invalid_idx = target == 0
+        depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
+        valid_idx=~invalid_idx
+        log_depth_target = get_log_depth_gt(depth_target, valid_idx)
+        log_depth_output = output.reshape(log_depth_target.shape)
+        log_depth_output[invalid_idx]=0
+        ssim_val = get_ssim_loss(log_depth_target.unsqueeze(0),log_depth_output.unsqueeze(0))
+        return ssim_val
+def ssim_error(output, target):
+    with torch.no_grad():
+        Q=get_projectmat()
+        if torch.cuda.is_available() and Q.device.type == "cpu":
+            Q = Q.cuda()
+        invalid_idx = target == 0
+        depth_target = Q[2, 3] / ((target - Q[3, 3])*Q[3,2])
+        depth_target = torch.clamp(depth_target,0,80)
+        depth_target[invalid_idx] = 0
+        depth_target = depth_target/torch.amax(torch.amax(depth_target,1,keepdims=True),2,keepdims=True)
+        depth_target *= 80
+        depth_output = from_log_to_depth(output.reshape(depth_target.shape))
+        depth_output[invalid_idx]=0
+        ssim_val = get_ssim_loss(depth_target.unsqueeze(0),depth_output.unsqueeze(0))
+        return ssim_val
