@@ -26,7 +26,7 @@
   },
   "loss": "loss",
   "metrics": [
-      "mean_square_error", "mean_absolute_error", "mean_absolute_error_10", "mean_absolute_error_20", "mean_absolute_error_30", "log_ssim_error", "ssim_error"
+      "mean_square_error", "mean_absolute_error", "mean_absolute_error_10", "mean_absolute_error_20", "mean_absolute_error_30"
   ],
   "lr_scheduler": {
       "type": "StepLR",
