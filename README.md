@@ -43,9 +43,7 @@ The output of an ideal event camera is a stream of asynchronous events. A event 
 
 Due to the sparse and asynchronous property of event stream, it's hard to feed into the neural network. Therefore, pre-processing event stream to other dense tensor-like representations while preserving its time information should be considered. In this paper, the authors use a novel representation named as spatio-temporal voxel grid. First, the input event stream is grouped into several fixed-size non-overlapping sliding windows based on their time $t_i$. The length of time window is $\Delta T$. Next, event within time window $j$ are grouped into $B$ temporal bins follows this rule:
 
-$$
-E _ { k } ( u _ { k } , t _ { n } ) = \sum _ { e _ { i } } p _ { i } \delta ( u _ { i } - u _ { k } ) \operatorname { max } \left( 0,1 - \left| t _ { n } - \frac { B - 1 } { \Delta T } ( t _ { i } - t _ { 0 } ) \right| \right)
-$$
+$$ E _ { k } ( u _ { k } , t _ { n } ) = \sum _ { e _ { i } } p _ { i } \delta ( u _ { i } - u _ { k } ) \operatorname { max } \left( 0,1 - \left| t _ { n } - \frac { B - 1 } { \Delta T } ( t _ { i } - t _ { 0 } ) \right| \right) $$
 
 Then the event stream can be converted to a $B \times H \times W$ tensor which could be feed into neural network. $H \times W$ are height and width of spatio-temporal voxel grid, $B$ can be regarded as channels.The non-zero values are then normalized as described in the paper.
 In our reproduction we use $\Delta T = 50 ms$ and $B = 15$. 
@@ -104,21 +102,21 @@ $$
 Here we use $\mathcal{D}_{log}$ as label for each valid pixel. A pixel is valid if the depth is not infinity, or, equivalently, the disparity is non-zero. 
 
 ## Loss Function
-The network is trained to minimize the scale-invariant loss $\mathcal{L}_{k, \mathrm{si}}$ and multi-scale scale-invariant gradient matching loss $\mathcal{L}_{k, \mathrm{grad}}$ at each time step $k$. 
+The network is trained to minimize the scale-invariant loss $\mathcal{L}_{k, \text{si}}$ and multi-scale scale-invariant gradient matching loss $\mathcal{L}_{k, \text{grad}}$ at each time step $k$. 
 
 $$
-\mathcal{L}_{\mathrm{tot}}=\sum_{k=0}^{L-1} \mathcal{L}_{k, \mathrm{si}}+\lambda \mathcal{L}_{k, \mathrm{grad}}
+\mathcal{L}_{\text{tot}}=\sum_{k=0}^{L-1} \mathcal{L}_{k, \text{si}}+\lambda \mathcal{L}_{k, \text{grad}}
 $$
 
-where $\lambda$ is a hyper-parameter representing the loss weight. Given a sequence of ground truth log depth map $\{\mathcal{D}_{k }\}$ , denote the residual $R_k =\hat D_k − D_k$. Then the scale-invariant loss $\mathcal{L}_{k, \mathrm{si}}$ is defined as
+where $\lambda$ is a hyper-parameter representing the loss weight. Given a sequence of ground truth log depth map $\{\mathcal{D}_{k }\}$ , denote the residual $R_k =\hat D_k − D_k$. Then the scale-invariant loss $\mathcal{L}_{k, \text{si}}$ is defined as
 
 $$
-\mathcal{L}_{k, \mathrm{si}}=\frac{1}{n} \sum_{\mathbf{u}}\left(\mathcal{R}_{k}(\mathbf{u})\right)^{2}-\frac{1}{n^{2}}\left(\sum_{\mathbf{u}} \mathcal{R}_{k}(\mathbf{u})\right)^{2}
+\mathcal{L}_{k, \text{si}}=\frac{1}{n} \sum_{\mathbf{u}}\left(\mathcal{R}_{k}(\mathbf{u})\right)^{2}-\frac{1}{n^{2}}\left(\sum_{\mathbf{u}} \mathcal{R}_{k}(\mathbf{u})\right)^{2}
 $$
 
 where $n$ is the number of valid ground truth pixels $\mathbf{u}$. This loss function enforces the predicted log depth to be aligned with the ground truth,  irrespective of the absolute global scale [^6]. If the predicted metric depth $\mathcal{D}_m$ is multiplied by scale factor $\beta$ (offset by $\frac{\beta}{\alpha}$ for log depth $\mathcal{D}_{log}$), the loss would still be invariant. 
 
-The multi-scale scale-invariant gradient matching loss $\mathcal{L}_{k, \mathrm{grad}}$ encourages smooth depth changes and enforces sharp depth discontinuities in the depth map prediction.
+The multi-scale scale-invariant gradient matching loss $\mathcal{L}_{k, \text{grad}}$ encourages smooth depth changes and enforces sharp depth discontinuities in the depth map prediction.
 
 $$
 \mathcal{L}_{k, \operatorname{grad}}=\frac{1}{n} \sum_{s} \sum_{\mathbf{u}}\left|\nabla_{x} \mathcal{R}_{k}^{s}(\mathbf{u})\right|+\left|\nabla_{y} \mathcal{R}_{k}^{s}(\mathbf{u})\right|
@@ -126,7 +124,7 @@ $$
 
 where $s$ refers to the different scale. Note that the scale $s$ here refers to the scale of image, not of the scale of depth. Different scale $s$ is obtained by sub-sampling by a factor of 2 on the input and ground truth.
 
-We have chosen the same hyper-parameters as in the paper[^7]. There are totally 4 scales for $\mathcal{L}_{k, \mathrm{grad}}$ (subsampling 4 times) and $λ$ = 0.5.
+We have chosen the same hyper-parameters as in the paper[^7]. There are totally 4 scales for $\mathcal{L}_{k, \text{grad}}$ (subsampling 4 times) and $λ$ = 0.5.
 
 
 
@@ -164,7 +162,7 @@ Besides the loss terms introduced previously, we also try adding SSIM loss as an
 
 The measure between two windows $x$ and $y$ of common size $N\times N$ is [^11]:
 $$
-\operatorname{SSIM}(x, y)=\frac{\left(2 \mu_{x} \mu_{y}+c_{1}\right)\left(2 \sigma_{x y}+c_{2}\right)}{\left(\mu_{x}^{2}+\mu_{y}^{2}+c_{1}\right)\left(\sigma_{x}^{2}+\sigma_{y}^{2}+c_{2}\right)}
+\mathcal{SSIM}(x, y)=\frac{\left(2 \mu_{x} \mu_{y}+c_{1}\right)\left(2 \sigma_{x y}+c_{2}\right)}{\left(\mu_{x}^{2}+\mu_{y}^{2}+c_{1}\right)\left(\sigma_{x}^{2}+\sigma_{y}^{2}+c_{2}\right)}
 $$
 with:
 - $\mu_{x}$ the average of $x$;
@@ -179,7 +177,7 @@ SSIM generally considers the similarity between 2 images and outputs the similar
 Hence the loss function becomes
 
 $$
-\mathcal{L}_{\mathrm{with\_ssim}}=\sum_{k=0}^{L-1} \mathcal{L}_{k, \mathrm{si}}+\lambda_{grad} \mathcal{L}_{k, \mathrm{grad}}+\lambda_{ssim} (1-\mathcal{SSIM}_k)
+\mathcal{L}_{\text{with\_ssim}}=\sum_{k=0}^{L-1} \mathcal{L}_{k, \text{si}}+\lambda_{grad} \mathcal{L}_{k, \text{grad}}+\lambda_{ssim} (1-\mathcal{SSIM}_k)
 $$
 where $\lambda_{ssim}$ is the SSIM loss weight, setted as 0.05.
 
