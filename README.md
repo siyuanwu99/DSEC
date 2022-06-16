@@ -86,17 +86,21 @@ This network applies summation over all the skip connections. States from the Co
 
 ## Log Depth Map Output
 The network is trained to output log depth maps 
+
 $$
 \hat{\mathcal{D}}_{k} \in[0,1]^{W \times H}
 $$
+
 which have the advantage of representing large depth variations in a compact range, facilitating learning. $k$ refers to the time step of the frame. The metric depth can be recovered by performing the following operations
 
 $$
 \hat{\mathcal{D}}_{m, k}=\mathcal{D}_{\max } \exp \left(-\alpha\left(1-\hat{\mathcal{D}}_{k}\right)\right)
 $$
+
 where $\mathcal{D}_{\max }$ is the maximum depth range of prediction. $α$ is a parameter chosen, such that a log depth value of 0 maps to minimum observed depth. We take $\mathcal{D}_{\max }=80 m$ and $\alpha = 3.7$, which results in a prediction range of $[2,80]$ meters. 
 
 Therefore, the ground truth disparity is converted firstly to depth
+
 $$
 \mathcal{D}_m=\frac{T_{x} f}{-\left[d-\left(c_{x}-c_{x}^{\prime}\right)\right]}
 $$
@@ -111,9 +115,11 @@ Here we use $\mathcal{D}_{log}$ as label for each valid pixel. A pixel is valid 
 
 ## Loss Function
 The network is trained to minimize the scale-invariant loss $\mathcal{L}_{k, \mathrm{si}}$ and multi-scale scale-invariant gradient matching loss $\mathcal{L}_{k, \mathrm{grad}}$ at each time step $k$. 
+
 $$
 \mathcal{L}_{\mathrm{tot}}=\sum_{k=0}^{L-1} \mathcal{L}_{k, \mathrm{si}}+\lambda \mathcal{L}_{k, \mathrm{grad}}
 $$
+
 where $\lambda$ is a hyper-parameter representing the loss weight. Given a sequence of ground truth log depth map $\{\mathcal{D}_{k }\}$ , denote the residual $R_k =\hat D_k − D_k$. Then the scale-invariant loss $\mathcal{L}_{k, \mathrm{si}}$ is defined as
 
 $$
