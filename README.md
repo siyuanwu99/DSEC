@@ -181,7 +181,7 @@ $$
 $$
 where $\lambda_{ssim}$ is the SSIM loss weight, setted as 0.05.
 
-SSIM loss term further promotes the similarity between predicted depth map and ground truth depth map. Similarly, we calculate this loss only on valid pixels by making invalid pixels value zero during loss calculation, in both ground truth label and prediction output. 
+SSIM loss term further promotes the similarity between predicted depth map and ground truth depth map. Similarly, we calculate this loss only on valid pixels by making invalid pixels value zero during loss calculation, in both ground truth label and prediction output. The SSIM loss implementation was built upon `pytorch_ssim`^[https://github.com/Po-Hsun-Su/pytorch-ssim].
 
 
 ## Results
