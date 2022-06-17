@@ -84,7 +84,7 @@ def loss(output, target):
     # print(depth_target.device)
     # print(R_k.device)
     # print(loss_val.device)
-    loss_val = loss_invar + 0.5 * (grad_loss + grad_loss_s1 + grad_loss_s2 + grad_loss_s3) + 0.03*ssim_val
+    loss_val = loss_invar + 0.5 * (grad_loss + grad_loss_s1 + grad_loss_s2 + grad_loss_s3) + 0.05*ssim_val
     return loss_val
 
 
