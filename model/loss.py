@@ -1,9 +1,9 @@
 import numpy as np
-from import_proj_matl import extract_projmat
+# from import_proj_matl import extract_projmat
 import torch
 import torch.nn.functional as F
 import torch
-
+import model.pytorch_ssim
 
 def get_projectmat():
     Q_np = np.array(
@@ -59,8 +59,15 @@ def loss(output, target):
 
     if torch.cuda.is_available():
         R_k = torch.zeros(target.shape).cuda()
+        ssim_target = torch.zeros(target.shape).cuda()
+        ssim_output = torch.zeros(target.shape).cuda()
     else:
         R_k = torch.zeros(target.shape)
+        ssim_target = torch.zeros(target.shape)
+        ssim_output = torch.zeros(target.shape)
+    ssim_target[valid_idx] = log_depth_target[valid_idx]
+    ssim_output[valid_idx] = depth_output[valid_idx]
+    ssim_val = get_ssim_loss(ssim_target.unsqueeze(0),ssim_output.unsqueeze(0))
     R_k[valid_idx] = log_depth_target[valid_idx] - depth_output[valid_idx]
     loss_invar = ((1 / valid_num) * torch.sum(R_k ** 2)) - (
         ((1 / valid_num) ** 2) * (torch.sum(R_k) ** 2)
@@ -77,7 +84,7 @@ def loss(output, target):
     # print(depth_target.device)
     # print(R_k.device)
     # print(loss_val.device)
-    loss_val = loss_invar + 0.5 * (grad_loss + grad_loss_s1 + grad_loss_s2 + grad_loss_s3)
+    loss_val = loss_invar + 0.5 * (grad_loss + grad_loss_s1 + grad_loss_s2 + grad_loss_s3) + 0.05*ssim_val
     return loss_val
 
 
@@ -116,3 +123,7 @@ def multi_grad_loss(log_depth_output, depth_target, valid_idx, valid_num):
 def from_log_to_depth(input_log_image,Dmax=80, alpha=3.7):
     depth_image=Dmax*torch.exp(-alpha*(1-input_log_image))
     return depth_image
+def get_ssim_loss(img1,img2):
+    ssim_loss = model.pytorch_ssim.SSIM()
+    ssim_val = 1-ssim_loss(img1, img2)
+    return ssim_val
