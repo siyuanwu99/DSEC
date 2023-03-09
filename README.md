@@ -56,7 +56,7 @@ In our reproduction we use $\Delta T = 50 ms$ and $B = 15$.
 
 ## Network Architecture
 
-![Network structure](https://edmundwsy.github.io/assets/img/network_structure.png)
+![Network structure](network_structure.png)
 <center> <b>Fig. 2</b> Network Structure</center>
 
 As shown in the figure above, the network we produced has a recurrent, fully convolutional structure. It can simply be divided as a header, an encoder, residual blocks, a decoder and a predictor.
